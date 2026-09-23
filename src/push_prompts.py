@@ -38,6 +38,7 @@ DICAS DE IMPLEMENTAÇÃO:
 
 import os
 import sys
+from pathlib import Path
 from dotenv import load_dotenv
 from langsmith import Client
 from langchain_core.prompts import ChatPromptTemplate
