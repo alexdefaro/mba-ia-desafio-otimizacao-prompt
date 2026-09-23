@@ -1,5 +1,79 @@
 # Pull, Otimização e Avaliação de Prompts com LangChain e LangSmith
 
+> Implementação de referência para transformar relatos de bugs em User Stories usando LangChain, LangSmith Prompt Hub e avaliação automática.
+
+## Guia rápido para usuários
+
+Este projeto possui três etapas automatizadas:
+
+1. `src/pull_prompts.py` baixa o prompt semente público e salva a versão local v1.
+2. `src/push_prompts.py` valida e publica `prompts/bug_to_user_story_v2.yml` no LangSmith.
+3. `src/evaluate.py` executa o prompt publicado contra os 15 exemplos do dataset e calcula as cinco métricas exigidas.
+
+O prompt otimizado combina **Few-shot Learning**, **Role Prompting** e **Skeleton of Thought**. Ele exige resposta Markdown estruturada, critérios Given/When/Then e tratamento explícito de informações ausentes, contraditórias ou sensíveis.
+
+### Pré-requisitos
+
+- Python 3.10 ou superior.
+- Uma conta e uma API key do LangSmith.
+- Uma API key da OpenAI ou do Google Gemini.
+- Um handle público do LangSmith Prompt Hub.
+
+### Instalação no Windows
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Preencha o `.env` com `LANGSMITH_API_KEY`, `USERNAME_LANGSMITH_HUB`, o provider escolhido, `LLM_MODEL` e `EVAL_MODEL`. Nunca publique o `.env` no GitHub.
+
+Para criar o handle, publique qualquer prompt no LangSmith pelo menu **Prompts > Make Public**. O handle escolhido é definitivo.
+
+### Execução
+
+```powershell
+python src/pull_prompts.py
+python -m pytest tests/test_prompts.py -q
+python src/push_prompts.py
+python src/evaluate.py
+```
+
+Depois do pull, revise ou refine manualmente `prompts/bug_to_user_story_v2.yml` antes do push. O arquivo já contém uma implementação inicial com as técnicas obrigatórias; as alterações de otimização devem ser feitas nele, sem alterar o dataset.
+
+O comando de avaliação deve terminar com `STATUS: APROVADO`. Todas as métricas precisam ser maiores ou iguais a `0.8`; a média não pode ser usada para compensar uma métrica individual abaixo desse valor.
+
+Repita o ciclo `editar v2 -> push -> evaluate` de três a cinco vezes, usando os scores e os traces do LangSmith para corrigir a métrica mais baixa.
+
+### O que validar no LangSmith
+
+Depois do push, confirme que o prompt está público em `Prompts` e que o experimento foi criado no projeto configurado. Compartilhe o dataset de avaliação para obter um link público e registre esse link no README final:
+
+```python
+from langsmith import Client
+
+client = Client()
+print(client.share_dataset(dataset_name="<LANGSMITH_PROJECT>-eval")["url"])
+```
+
+Inclua também screenshots ou links mostrando os 15 exemplos, as cinco notas acima de `0.8` e o tracing detalhado de pelo menos três exemplos.
+
+### Validação local
+
+Os testes verificam o contrato mínimo do prompt v2: system prompt não vazio, persona, formato User Story/Markdown, exemplos Few-shot, ausência de `[TODO]` e pelo menos duas técnicas no metadata YAML.
+
+Os arquivos `src/evaluate.py`, `src/metrics.py`, `src/utils.py` e `datasets/bug_to_user_story.jsonl` fazem parte da infraestrutura fornecida e não devem ser alterados para melhorar artificialmente o resultado.
+
+### Problemas comuns
+
+- **Prompt não encontrado:** confira `USERNAME_LANGSMITH_HUB` e execute novamente `python src/push_prompts.py`.
+- **Handle inválido:** torne um prompt público no LangSmith antes do push.
+- **API key ausente:** confirme o provider e as variáveis correspondentes no `.env`.
+- **Métrica abaixo de 0.8:** examine os traces no LangSmith, ajuste somente o prompt v2, publique uma nova versão e avalie novamente.
+- **Pull bloqueado:** o script já usa `dangerously_pull_public_prompt=True` para o prompt público do desafio.
+
 ## Objetivo
 
 Você deve entregar um software capaz de:
