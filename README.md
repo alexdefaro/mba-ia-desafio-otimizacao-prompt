@@ -28,7 +28,19 @@ python -m pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-Preencha o `.env` com `LANGSMITH_API_KEY`, `USERNAME_LANGSMITH_HUB`, o provider escolhido, `LLM_MODEL` e `EVAL_MODEL`. Nunca publique o `.env` no GitHub.
+Antes de executar `pull_prompts.py`, `push_prompts.py` ou `evaluate.py`, preencha o `.env` com as credenciais e configurações dos serviços externos. Sem essas credenciais, a aplicação não conseguirá acessar o LangSmith nem os modelos de linguagem.
+
+No mínimo, configure:
+
+- `LANGSMITH_API_KEY`: API key do LangSmith, necessária para pull, push, tracing, datasets e avaliação.
+- `USERNAME_LANGSMITH_HUB`: seu handle público do LangSmith Prompt Hub, necessário para publicar o prompt v2.
+- `LLM_PROVIDER`: `google` ou `openai`.
+- A API key do provider escolhido: `GOOGLE_API_KEY` ou `OPENAI_API_KEY`.
+- `LLM_MODEL`: modelo que gera as respostas.
+- `EVAL_MODEL`: modelo usado pelos avaliadores das métricas.
+- `LANGSMITH_PROJECT`: nome do projeto de tracing e avaliação.
+
+Use `.env.example` como modelo. As chaves não são fornecidas pelo projeto: crie-as no [LangSmith](https://smith.langchain.com/), [Google AI Studio](https://aistudio.google.com/app/apikey) ou [OpenAI](https://platform.openai.com/api-keys), conforme o provider escolhido. Nunca publique o `.env` no GitHub.
 
 Para criar o handle, publique qualquer prompt no LangSmith pelo menu **Prompts > Make Public**. O handle escolhido é definitivo.
 
